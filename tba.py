@@ -22,3 +22,18 @@ class TBA:
 	def get_matches(self):
 		endpoint = '/matches'
 		return self.get_event(endpoint)
+	
+	def get_teams(self):
+		endpoint = '/teams'
+		return self.get_event(endpoint)
+
+	def get_team_status(self):
+		url = self.base_url + f'/team/{self.team}/event/{self.event}/status'
+		return requests.get(url, 
+			headers={'accept': 'application/json', 'X-TBA-Auth-Key': self.auth}, 
+			params={'team_key': self.team, 'event_key': self.event}
+		).json()
+
+def clamp_to_bin(num, min_val, max_val):
+	range = max_val - min_val
+	return (((num - min_val) * 1) / range) + 0
