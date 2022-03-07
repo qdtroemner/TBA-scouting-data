@@ -1,4 +1,4 @@
-from tba import TBA, clamp_to_bin
+from tba import TBA
 import pandas as pd
 
 CONTRIBUTION_WEIGHT = 0.5
@@ -15,21 +15,15 @@ data.index = teams
 
 oprs = client.get_OPRs()
 for i, team in enumerate(data.index):
-	ccwm = oprs['ccwms'][team]
-	opr = oprs['oprs'][team]
-	dpr = oprs['dprs'][team]
-	data.at[team, 'CCWM'] = ccwm
-	data.at[team, 'OPR'] = opr
-	data.at[team, 'DPR'] = dpr
-	data.at[team, 'Average'] = (
-		clamp_to_bin(ccwm, data['CCWM'].min(), data['CCWM'].max()) + 
-		clamp_to_bin(opr, data['OPR'].min(), data['OPR'].max()) + 
-		clamp_to_bin(dpr, data['DPR'].min(), data['DPR'].max())
-	) / 3
-	data.at[team, 'Weighted Average'] = (
-		clamp_to_bin(ccwm, data['CCWM'].min(), data['CCWM'].max()) * CONTRIBUTION_WEIGHT + 
-		clamp_to_bin(opr, data['OPR'].min(), data['OPR'].max()) * OFFENSIVE_WEIGHT + 
-		clamp_to_bin(dpr, data['DPR'].min(), data['DPR'].max()) * DEFENSIVE_WEIGHT
-	)
+	data.at[team, 'CCWM'] = oprs['ccwms'][team]
+	data.at[team, 'OPR'] = oprs['oprs'][team]
+	data.at[team, 'DPR'] = oprs['dprs'][team]
 
-data.to_excel('./data/OPRs_v2.xlsx')
+for i, team in enumerate(data.index):
+	team_qual_stats = client.get_team_status(team)['qual']
+	for stat_index, stat in enumerate(team_qual_stats['sort_order_info']):
+		key = stat['name']
+		data.at[team, key] = team_qual_stats['ranking']['sort_orders'][stat_index]
+print(data)
+
+#data.to_excel('./data/scouting_data.xlsx')
